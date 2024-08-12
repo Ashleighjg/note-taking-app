@@ -1,5 +1,6 @@
 const notes = require("express").Router();
 const { v4: uuidv4 } = require("uuid");
+const path = require("path");
 
 const {
   readFromFile,
@@ -9,7 +10,7 @@ const {
 
 
 // GET Route for retrieving all the notes
-notes.get('/api/notes', (req, res) => {
+notes.get('/notes', (req, res) => {
     console.info(`${req.method} request received for notes`);
   readFromFile('./db/db.json').then((data) => res.json(JSON.parse(data)));
 });
@@ -29,13 +30,13 @@ notes.get('/notes/:note_id', (req, res) => {
 */
 
 // DELETE Route for note   
-notes.delete('/notes/:note_id', (req, res) => {
-  const noteId = req.params.note_id;
+notes.delete('/notes/:id', (req, res) => {
+  const noteId = req.params.id;
   readFromFile('./db/db.json')
     .then((data) => JSON.parse(data))
     .then((json) => {
       // Make a new array of all notes except the one with the ID provided in the URL
-      const result = json.filter((note) => note.note_id !== noteId);
+      const result = json.filter((note) => note.id !== noteId);
 
       // Save that array to the filesystem
       writeToFile('./db/db.json', result);
@@ -47,7 +48,7 @@ notes.delete('/notes/:note_id', (req, res) => {
 
 
 // POST Route for a new note
-notes.post('/', (req, res) => {
+notes.post('/notes', (req, res) => {
   console.log(req.body);
 
   const { title, text } = req.body;
@@ -56,14 +57,15 @@ notes.post('/', (req, res) => {
     const newNote = {
       title,
       text,
-      note_id: uuidv4(),
+      id: uuidv4(),
     };
 
     readAndAppend(newNote, './db/db.json');
-    res.json(`Note added successfully`);
+    res.json(newNote                                                                              );
   } else {
     res.error('Error in adding note');
   }
+  
 });
 
 module.exports = notes;
